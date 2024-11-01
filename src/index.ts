@@ -1,5 +1,5 @@
-import type { Handler } from 'aws-lambda';
-import { string, z } from 'zod';
+import type { APIGatewayProxyHandlerV2 } from 'aws-lambda';
+import { z } from 'zod';
 import {
   clearAttendance,
   getDriver,
@@ -33,10 +33,23 @@ const schema = z.object({
     .array(),
 });
 
-export const handler: Handler = async (event, context) => {
-  const body = event?.body;
+export const handler: APIGatewayProxyHandlerV2<{
+  statusCode: number;
+  body: string;
+}> = async (event) => {
+  const httpMethod = event.requestContext.http.method;
+  if (httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ message: 'Method Not Allowed' }),
+    };
+  }
+
+  const body = event.body;
 
   if (!body) {
+    console.error('Empty request body');
+
     return {
       statusCode: 400,
       body: JSON.stringify({

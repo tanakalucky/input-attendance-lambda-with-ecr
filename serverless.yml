@@ -1,0 +1,35 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: tanakalucky
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: input-attendance-lambda-with-ecr
+
+provider:
+  name: aws
+  region: ap-northeast-1
+  runtime: nodejs20.x
+  memorySize: 2048
+  timeout: 60
+  ecr:
+    images:
+      selenium:
+        path: .
+        platform: linux/amd64
+
+functions:
+  inputAttendance:
+    image: selenium
+
+    url:
+      cors:
+        allowedOrigins:
+          - '*'
+        allowedMethods:
+          - POST
+        allowedHeaders:
+          - Content-Type
+          - X-Amz-Date
+          - Authorization
+          - X-Api-Key
+          - X-Amz-Security-Token
+        allowCredentials: false
+        maxAge: 86400

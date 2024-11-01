@@ -2,7 +2,10 @@
   "service": "app",
   "dockerComposeFile": "docker-compose.yml",
   "workspaceFolder": "/app",
-  "mounts": ["source=~/.aws,target=/root/.aws"],
+  "mounts": [
+    "source=~/.aws,target=/root/.aws",
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
   "customizations": {
     "vscode": {
       "extensions": ["eamodio.gitlens", "biomejs.biome"],
