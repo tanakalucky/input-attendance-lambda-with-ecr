@@ -1,0 +1,22 @@
+{
+  "service": "app",
+  "dockerComposeFile": "docker-compose.yml",
+  "workspaceFolder": "/app",
+  "mounts": [
+    "source=~/.aws,target=/root/.aws"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": ["eamodio.gitlens", "biomejs.biome"],
+      "settings": {
+        "editor.tabSize": 2,
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "quickfix.biome": "explicit",
+          "source.organizeImports.biome": "explicit"
+        }
+      }
+    }
+  }
+}

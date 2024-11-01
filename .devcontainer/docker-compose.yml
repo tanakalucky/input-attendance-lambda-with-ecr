@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/app
+    tty: true
+    image: input-attendance-lambda-with-ecr
+    container_name: input-attendance-lambda-with-ecr-container
+    environment:
+      TZ: "Asia/Tokyo"
+    network_mode: "host"
