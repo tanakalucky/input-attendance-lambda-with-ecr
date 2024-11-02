@@ -3,6 +3,7 @@ import {
   By,
   type ThenableWebDriver,
   type WebDriver,
+  until,
 } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome';
 
@@ -85,6 +86,23 @@ export const moveToInputAttendancePage = async (
     By.xpath('/html/body/div/div/nav/div[2]/div/div[1]/div/a[2]'),
   );
   await fixMonthAttendanceBtn.click();
+
+  await driver.wait(
+    until.elementLocated(
+      By.xpath(
+        '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[1]',
+      ),
+    ),
+    5000,
+  );
+  await driver.wait(
+    until.elementLocated(
+      By.xpath(
+        '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[2]',
+      ),
+    ),
+    5000,
+  );
 };
 
 export const selectYear = async (
