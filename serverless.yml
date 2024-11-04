@@ -19,6 +19,9 @@ functions:
   inputAttendance:
     image: selenium
 
+    environment:
+      SENTRY_DSN: ${env:SENTRY_DSN}
+
     url:
       cors:
         allowedOrigins:
