@@ -34,13 +34,20 @@ export const getDriver = async (): Promise<ThenableWebDriver> => {
     .forBrowser('chrome')
     .setChromeOptions(options)
     .setChromeService(serviceBuilder)
-    .build();
+    .build()
+    .catch((error) => {
+      console.error('Failed to get driver');
+      throw error;
+    });
 };
 
 export const moveToLoginPage = async (driver: WebDriver): Promise<void> => {
   console.log('Waiting for move to login page...');
 
-  return driver.get('https://id.jobcan.jp/users/sign_in');
+  return driver.get('https://id.jobcan.jp/users/sign_in').catch((error) => {
+    console.error('Failed to move to login page');
+    throw error;
+  });
 };
 
 export const login = async (
@@ -48,135 +55,176 @@ export const login = async (
   loginId: string,
   loginPw: string,
 ): Promise<void> => {
-  console.log('Waiting for login...');
+  try {
+    console.log('Waiting for login...');
 
-  const loginIdInput = await driver.findElement(
-    By.xpath("//*[@id='user_email']"),
-  );
-  await loginIdInput.sendKeys(loginId);
+    const loginIdInput = await driver.findElement(
+      By.xpath("//*[@id='user_email']"),
+    );
+    await loginIdInput.sendKeys(loginId);
 
-  const loginPwInput = await driver.findElement(
-    By.xpath("//*[@id='user_password']"),
-  );
-  await loginPwInput.sendKeys(loginPw);
+    const loginPwInput = await driver.findElement(
+      By.xpath("//*[@id='user_password']"),
+    );
+    await loginPwInput.sendKeys(loginPw);
 
-  const loginBtn = await driver.findElement(
-    By.xpath("//*[@id='login_button']"),
-  );
-  await loginBtn.click();
+    const loginBtn = await driver.findElement(
+      By.xpath("//*[@id='login_button']"),
+    );
+    await loginBtn.click();
+  } catch (error) {
+    console.log('Failed to login');
+    throw error;
+  }
 };
 
 export const moveToInputAttendancePage = async (
   driver: WebDriver,
 ): Promise<void> => {
-  console.log('Waiting for move to input attendance page...');
+  try {
+    console.log('Waiting for move to input attendance page...');
 
-  // Cannot change the tab in headless mode
-  const attendanceUrl = await driver
-    .findElement(By.xpath('/html/body/div[1]/header/nav/div/div[2]/ul/li[3]/a'))
-    .getAttribute('href');
-  await driver.get(attendanceUrl);
+    // Cannot change the tab in headless mode
+    const attendanceUrl = await driver
+      .findElement(
+        By.xpath('/html/body/div[1]/header/nav/div/div[2]/ul/li[3]/a'),
+      )
+      .getAttribute('href');
+    await driver.get(attendanceUrl);
 
-  const fixAttendanceBtn = await driver.findElement(
-    By.xpath('/html/body/div/div/nav/div[2]/div/div[1]/a'),
-  );
-  await fixAttendanceBtn.click();
+    const fixAttendanceBtn = await driver.findElement(
+      By.xpath('/html/body/div/div/nav/div[2]/div/div[1]/a'),
+    );
+    await fixAttendanceBtn.click();
 
-  const fixMonthAttendanceBtn = await driver.findElement(
-    By.xpath('/html/body/div/div/nav/div[2]/div/div[1]/div/a[2]'),
-  );
-  await fixMonthAttendanceBtn.click();
+    const fixMonthAttendanceBtn = await driver.findElement(
+      By.xpath('/html/body/div/div/nav/div[2]/div/div[1]/div/a[2]'),
+    );
+    await fixMonthAttendanceBtn.click();
 
-  await driver.wait(
-    until.elementLocated(
-      By.xpath(
-        '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[1]',
+    await driver.wait(
+      until.elementLocated(
+        By.xpath(
+          '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[1]',
+        ),
       ),
-    ),
-    5000,
-  );
-  await driver.wait(
-    until.elementLocated(
-      By.xpath(
-        '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[2]',
+      5000,
+    );
+    await driver.wait(
+      until.elementLocated(
+        By.xpath(
+          '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[2]',
+        ),
       ),
-    ),
-    5000,
-  );
+      5000,
+    );
+  } catch (error) {
+    console.error('Failed to move to input attendance page');
+    throw error;
+  }
 };
 
 export const selectYear = async (
   driver: WebDriver,
   year: number,
 ): Promise<void> => {
-  console.log('Waiting for input year...');
+  try {
+    console.log('Waiting for input year...');
 
-  const selectElement = await driver.findElement(
-    By.xpath(
-      '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[1]',
-    ),
-  );
-  const select = new Select(selectElement);
-  await select.selectByValue(year.toString());
+    const selectElement = await driver.findElement(
+      By.xpath(
+        '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[1]',
+      ),
+    );
+    const select = new Select(selectElement);
+    await select.selectByValue(year.toString());
+  } catch (error) {
+    console.error('Failed to select year');
+    throw error;
+  }
 };
 
 export const selectMonth = async (
   driver: WebDriver,
   month: number,
 ): Promise<void> => {
-  console.log('Waiting for input month...');
+  try {
+    console.log('Waiting for input month...');
 
-  const selectElement = await driver.findElement(
-    By.xpath(
-      '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[2]',
-    ),
-  );
-  const select = new Select(selectElement);
-  await select.selectByValue(month.toString());
+    const selectElement = await driver.findElement(
+      By.xpath(
+        '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[2]',
+      ),
+    );
+    const select = new Select(selectElement);
+    await select.selectByValue(month.toString());
+  } catch (error) {
+    console.error('Failed to select month');
+    throw error;
+  }
 };
 
 export const clearAttendance = async (driver: WebDriver): Promise<void> => {
-  console.log('Waiting for clear attendance...');
+  try {
+    console.log('Waiting for clear attendance...');
 
-  const timeInputs = await driver.findElements(By.className('form-type-time'));
+    const timeInputs = await driver.findElements(
+      By.className('form-type-time'),
+    );
 
-  const promises = [];
-  for (const timeInput of timeInputs) {
-    promises.push(timeInput.clear());
+    const promises = [];
+    for (const timeInput of timeInputs) {
+      promises.push(timeInput.clear());
+    }
+
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('Failed to clear attendance');
+    throw error;
   }
-
-  await Promise.all(promises);
 };
 
 export const inputAttendance = async (
   driver: WebDriver,
   attendances: InputSchema['attendances'],
 ): Promise<void> => {
-  console.log('Waiting for input attendance...');
+  try {
+    console.log('Waiting for input attendance...');
 
-  const timeInputs = await driver.findElements(By.className('form-type-time'));
+    const timeInputs = await driver.findElements(
+      By.className('form-type-time'),
+    );
 
-  for (const attendance of attendances) {
-    const day = new Date(attendance.date).getDate();
+    for (const attendance of attendances) {
+      const day = new Date(attendance.date).getDate();
 
-    const index = (day - 1) * 3;
+      const index = (day - 1) * 3;
 
-    timeInputs[index]?.sendKeys(attendance.start_time);
-    timeInputs[index + 1]?.sendKeys(attendance.end_time);
-    timeInputs[index + 2]?.sendKeys(attendance.break_time);
+      timeInputs[index]?.sendKeys(attendance.start_time);
+      timeInputs[index + 1]?.sendKeys(attendance.end_time);
+      timeInputs[index + 2]?.sendKeys(attendance.break_time);
+    }
+  } catch (error) {
+    console.log('Failed to input attendance');
+    throw error;
   }
 };
 
 export const saveAttendance = async (driver: WebDriver): Promise<void> => {
-  console.log('Waiting for save attendance...');
+  try {
+    console.log('Waiting for save attendance...');
 
-  const saveBtn = await driver.findElement(
-    By.xpath(
-      '/html/body/div/div/div[2]/main/div/div/div/div[2]/form/div[1]/div[2]/div[1]',
-    ),
-  );
-  await driver.executeScript('arguments[0].click();', saveBtn);
+    const saveBtn = await driver.findElement(
+      By.xpath(
+        '/html/body/div/div/div[2]/main/div/div/div/div[2]/form/div[1]/div[2]/div[1]',
+      ),
+    );
+    await driver.executeScript('arguments[0].click();', saveBtn);
 
-  const alert = await driver.switchTo().alert();
-  await alert.accept();
+    const alert = await driver.switchTo().alert();
+    await alert.accept();
+  } catch (error) {
+    console.error('Failed to save attendance');
+    throw error;
+  }
 };
