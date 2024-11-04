@@ -2,7 +2,7 @@
   "name": "input-attendance-lambda-with-ecr",
   "version": "1.0.0",
   "scripts": {
-    "build": "tsc -noEmit && esbuild src/index.ts --bundle --tsconfig=tsconfig.json --platform=node --outfile=index.js --minify",
+    "build": "tsc -noEmit && esbuild src/index.ts --bundle --tsconfig=tsconfig.json --platform=node --outfile=index.js --minify --loader:.node=copy",
     "lint": "npx @biomejs/biome lint --write",
     "format": "npx @biomejs/biome format --write",
     "check": "npx @biomejs/biome check --write"
