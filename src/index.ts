@@ -49,23 +49,13 @@ export const handler: APIGatewayProxyHandlerV2<{
 }> = Sentry.wrapHandler(async (event) => {
   const httpMethod = event.requestContext.http.method;
   if (httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ message: 'Method Not Allowed' }),
-    };
+    throw new Error('Method Not Allowed');
   }
 
   const body = event.body;
 
   if (!body) {
-    console.error('Empty request body');
-
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Invalid request',
-      }),
-    };
+    throw new Error('Empty request body');
   }
 
   const parseData = JSON.parse(body);
@@ -74,12 +64,7 @@ export const handler: APIGatewayProxyHandlerV2<{
 
   if (result.error) {
     console.error('A validate error occured: ', result.error);
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Invalid request',
-      }),
-    };
+    throw new Error('Invalid request');
   }
 
   let driver = undefined;
@@ -106,15 +91,6 @@ export const handler: APIGatewayProxyHandlerV2<{
       statusCode: 200,
       body: JSON.stringify({
         message: 'Input attendance success.',
-      }),
-    };
-  } catch (error) {
-    console.error('An error occurred:', error);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: 'Failed to input attendance',
       }),
     };
   } finally {
