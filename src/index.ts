@@ -12,6 +12,16 @@ import {
   selectYear,
 } from './selenium';
 
+import * as Sentry from '@sentry/aws-serverless';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [nodeProfilingIntegration()],
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+});
+
 export type InputSchema = z.infer<typeof schema>;
 const schema = z.object({
   loginId: z.string().min(1),
@@ -36,7 +46,7 @@ const schema = z.object({
 export const handler: APIGatewayProxyHandlerV2<{
   statusCode: number;
   body: string;
-}> = async (event) => {
+}> = Sentry.wrapHandler(async (event) => {
   const httpMethod = event.requestContext.http.method;
   if (httpMethod !== 'POST') {
     return {
@@ -114,4 +124,4 @@ export const handler: APIGatewayProxyHandlerV2<{
       console.log('Driver quit successfully.');
     }
   }
-};
+});
