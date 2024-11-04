@@ -32,9 +32,6 @@ jobs:
           node-version: "20"
           cache: npm
 
-      - name: Set up buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Install dependencies
         run: npm ci
 
