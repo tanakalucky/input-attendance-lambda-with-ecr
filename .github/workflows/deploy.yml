@@ -20,7 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
+          node-version: 20
           cache: npm
 
       - name: Install dependencies
@@ -39,3 +39,4 @@ jobs:
           args: deploy --stage prod
         env:
           SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
