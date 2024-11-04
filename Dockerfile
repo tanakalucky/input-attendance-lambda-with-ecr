@@ -24,6 +24,6 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 
 COPY --from=build /opt /opt
 
-COPY --from=build /build/index.js ./index.js
+COPY --from=build /build ./
 
 CMD [ "index.handler" ]
