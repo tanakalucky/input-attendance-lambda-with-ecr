@@ -1,29 +1,42 @@
-FROM public.ecr.aws/lambda/nodejs:20 AS build
+FROM public.ecr.aws/lambda/nodejs:22 AS build
 
 WORKDIR /build
-
 COPY . .
 
-RUN dnf install -y jq unzip
+# Playwrightのブラウザパスを設定
+ENV PLAYWRIGHT_BROWSERS_PATH=/build/.cache/ms-playwright
 
-RUN chmod 777 chrome-installer.sh && \
-    ./chrome-installer.sh
+# ビルドにesbuildが必要なので--omit=devしない
+RUN npm ci
+RUN npx playwright install chromium --only-shell
+RUN npm run build
 
-RUN npm i && npm run build
+RUN npm ci --omit=dev --ignore-scripts
 
-FROM public.ecr.aws/lambda/nodejs:20
+FROM public.ecr.aws/lambda/nodejs:22
 
-RUN dnf install -y atk cups-libs gtk3 libXcomposite alsa-lib \
-    libXcursor libXdamage libXext libXi libXrandr libXScrnSaver \
-    libXtst pango at-spi2-atk libXt xorg-x11-server-Xvfb \
-    xorg-x11-xauth dbus-glib dbus-glib-devel nss mesa-libgbm && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
-    
-WORKDIR ${LAMBDA_TASK_ROOT}
+# Playwrightのブラウザパスを設定
+ENV PLAYWRIGHT_BROWSERS_PATH=${LAMBDA_TASK_ROOT}/.cache/ms-playwright
 
-COPY --from=build /opt /opt
+# Playwrightに必要なシステム依存関係をインストール
+RUN dnf install -y \
+    atk \
+    cups-libs \
+    gtk3 \
+    libXcomposite \
+    libXdamage \
+    libXrandr \
+    alsa-lib \
+    mesa-libgbm \
+    pango \
+    libXi \
+    libXtst \
+    nss \
+    && dnf clean all
 
-COPY --from=build /build ./
+COPY --from=build /build/index.js ${LAMBDA_TASK_ROOT}/
+COPY --from=build /build/node_modules ${LAMBDA_TASK_ROOT}/node_modules
+# Playwrightのブラウザをコピー
+COPY --from=build /build/.cache/ms-playwright ${LAMBDA_TASK_ROOT}/.cache/ms-playwright
 
-CMD [ "index.handler" ]
+CMD ["index.handler"]

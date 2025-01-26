@@ -1,25 +1,22 @@
+import * as Sentry from '@sentry/aws-serverless';
 import type { APIGatewayProxyHandlerV2 } from 'aws-lambda';
+import type { Browser, Page } from 'playwright';
 import { z } from 'zod';
 import {
   clearAttendance,
-  getDriver,
+  getBrowser,
+  getPage,
   inputAttendance,
   login,
   moveToInputAttendancePage,
-  moveToLoginPage,
   saveAttendance,
   selectMonth,
   selectYear,
-} from './selenium';
-
-import * as Sentry from '@sentry/aws-serverless';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
+} from './playwright';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  integrations: [nodeProfilingIntegration()],
   tracesSampleRate: 1.0,
-  profilesSampleRate: 1.0,
 });
 
 export type InputSchema = z.infer<typeof schema>;
@@ -47,57 +44,70 @@ export const handler: APIGatewayProxyHandlerV2<{
   statusCode: number;
   body: string;
 }> = Sentry.wrapHandler(async (event) => {
-  const httpMethod = event.requestContext.http.method;
-  if (httpMethod !== 'POST') {
-    throw new Error('Method Not Allowed');
-  }
-
-  const body = event.body;
-
-  if (!body) {
-    throw new Error('Empty request body');
-  }
-
-  const parseData = JSON.parse(body);
-
-  const result = schema.safeParse(parseData);
-
-  if (result.error) {
-    console.error('A validate error occured: ', result.error);
-    throw new Error('Invalid request');
-  }
-
-  let driver = undefined;
+  const startTime = Date.now();
+  let browser: Browser | undefined;
+  let page: Page | undefined;
 
   try {
-    driver = await getDriver();
+    console.log('Handler started');
+    const httpMethod = event.requestContext.http.method;
+    if (httpMethod !== 'POST') {
+      throw new Error('Method Not Allowed');
+    }
 
-    await moveToLoginPage(driver);
+    const body = event.body;
 
-    await login(driver, result.data.loginId, result.data.loginPw);
+    if (!body) {
+      throw new Error('Empty request body');
+    }
 
-    await moveToInputAttendancePage(driver);
+    const parseData = JSON.parse(body);
 
-    await selectYear(driver, result.data.year);
-    await selectMonth(driver, result.data.month);
+    const result = schema.safeParse(parseData);
 
-    await clearAttendance(driver);
+    if (result.error) {
+      console.error('A validate error occured: ', result.error);
+      throw new Error('Invalid request');
+    }
 
-    await inputAttendance(driver, result.data.attendances);
+    browser = await getBrowser();
+    console.log(`Browser started: ${Date.now() - startTime}ms`);
+    page = await getPage(browser);
 
-    await saveAttendance(driver);
+    console.log(`Login started: ${Date.now() - startTime}ms`);
+    await login(page, result.data.loginId, result.data.loginPw);
 
+    console.log(
+      `moveToInputAttendancePage started: ${Date.now() - startTime}ms`,
+    );
+    await moveToInputAttendancePage(page);
+
+    console.log(`select year and month started: ${Date.now() - startTime}ms`);
+    await selectYear(page, result.data.year);
+    await selectMonth(page, result.data.month);
+
+    console.log(`clear started: ${Date.now() - startTime}ms`);
+    await clearAttendance(page);
+
+    console.log(`input attendance started: ${Date.now() - startTime}ms`);
+    await inputAttendance(page, result.data.attendances);
+
+    console.log(`save attendance started: ${Date.now() - startTime}ms`);
+    await saveAttendance(page);
+
+    console.log(`Total execution time: ${Date.now() - startTime}ms`);
     return {
       statusCode: 200,
       body: JSON.stringify({
         message: 'Input attendance success.',
+        executionTime: Date.now() - startTime,
       }),
     };
+  } catch (error) {
+    console.error('Error occurred:', error);
+    throw error;
   } finally {
-    if (driver) {
-      console.log('Quitting the driver...');
-      await driver.quit();
-      console.log('Driver quit successfully.');
-    }
+    if (page) await page.close();
+    if (browser) await browser.close();
   }
 });
